@@ -15,6 +15,8 @@ public class BlockChain {
      */
     ArrayList<Block> blockChain;
     Block maxHeightBlock;
+    TransactionPool transactionPool;
+    
     public BlockChain(Block genesisBlock) {
         // IMPLEMENT THIS
     	this.blockChain = new ArrayList<Block>();
@@ -47,6 +49,7 @@ public class BlockChain {
     /** Get the transaction pool to mine a new block */
     public TransactionPool getTransactionPool() {
         // IMPLEMENT THIS
+    	return transactionPool;
     }
 
     /**
