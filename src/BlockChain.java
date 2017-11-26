@@ -44,6 +44,15 @@ public class BlockChain {
 	            maxHeightUTXOPool.addUTXO(utxo, out);
 	        }
     	}
+    	//Add outputs for the previous block coinbase transaction
+    	Transaction coinbase = maxHeightBlock.getCoinbase();
+    	for (int i = 0; i < coinbase.numOutputs(); i++) {
+            Transaction.Output out = coinbase.getOutput(i);
+            UTXO utxo = new UTXO(coinbase.getHash(), i);
+            maxHeightUTXOPool.addUTXO(utxo, out);
+        }
+    	
+    	
     	return maxHeightUTXOPool;
     }
 
@@ -92,6 +101,10 @@ public class BlockChain {
     	int maxHeight = blockChain.size();
     	if (blockHeight > (maxHeight - CUT_OFF_AGE)) {
     		blockChain.add(block);
+    		//Remove transactions from transaction Pool
+    		for (Transaction tx : transactionList) {
+    			transactionPool.removeTransaction(tx.getHash());
+    		}
     		return true;
     	}
     	else {
