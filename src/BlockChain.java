@@ -1,4 +1,7 @@
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 
 // Block Chain should maintain only limited block nodes to satisfy the functions
 // You should not have all the blocks added to the block chain in memory 
@@ -90,27 +93,33 @@ public class BlockChain {
         // All transaction should be valid
     	TxHandler txHandler = new TxHandler(maxHeightUTXOPool);
     	ArrayList<Transaction> transactionList = block.getTransactions();
-    	for (Transaction tx : transactionList) {
-    		if (!txHandler.isValidTx(tx)) {
-    			return false;
-    		}
-    	}
+    	Transaction[] validTxs;
+    	validTxs = txHandler.handleTxs(
+    			transactionList.toArray(new Transaction[transactionList.size()]));
     	
-    	//Height of the new block.
-    	int blockHeight = getBlockHeight(block);
-    	int maxHeight = blockChain.size();
-    	if (blockHeight > (maxHeight - CUT_OFF_AGE)) {
-    		blockChain.add(block);
-    		//Remove transactions from transaction Pool
-    		for (Transaction tx : transactionList) {
-    			transactionPool.removeTransaction(tx.getHash());
-    		}
-    		return true;
-    	}
-    	else {
+    	Set<Transaction> transactionSet = new HashSet<Transaction>(transactionList);
+    	Set<Transaction> validtransactionSet = new HashSet<Transaction>(Arrays.asList(validTxs));
+    	
+    	if (!transactionSet.equals(validtransactionSet)) {
     		return false;
     	}
-    	
+    	else {
+	    	
+	    	//Height of the new block.
+	    	int blockHeight = getBlockHeight(block);
+	    	int maxHeight = blockChain.size();
+	    	if (blockHeight > (maxHeight - CUT_OFF_AGE)) {
+	    		blockChain.add(block);
+	    		//Remove transactions from transaction Pool
+	    		for (Transaction tx : transactionList) {
+	    			transactionPool.removeTransaction(tx.getHash());
+	    		}
+	    		return true;
+	    	}
+	    	else {
+	    		return false;
+	    	}
+    	}
     	
     }
 
