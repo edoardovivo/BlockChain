@@ -23,7 +23,9 @@ public class BlockChain {
 
     /** Get the maximum height block */
     public Block getMaxHeightBlock() {
-        // IMPLEMENT THIS
+        Block maxHeightBlock;
+        maxHeightBlock = blockChain.get(blockChain.size()-1);
+        return maxHeightBlock; 
     }
 
     /** Get the UTXOPool for mining a new block on top of max height block */
