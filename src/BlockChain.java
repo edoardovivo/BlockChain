@@ -14,16 +14,17 @@ public class BlockChain {
      * block
      */
     ArrayList<Block> blockChain;
+    Block maxHeightBlock;
     public BlockChain(Block genesisBlock) {
         // IMPLEMENT THIS
     	this.blockChain = new ArrayList<Block>();
     	this.blockChain.add(genesisBlock);
+    	this.maxHeightBlock = genesisBlock;
     	
     }
 
     /** Get the maximum height block */
     public Block getMaxHeightBlock() {
-        Block maxHeightBlock;
         maxHeightBlock = blockChain.get(blockChain.size()-1);
         return maxHeightBlock; 
     }
@@ -31,6 +32,16 @@ public class BlockChain {
     /** Get the UTXOPool for mining a new block on top of max height block */
     public UTXOPool getMaxHeightUTXOPool() {
         // IMPLEMENT THIS
+    	UTXOPool maxHeightUTXOPool = new UTXOPool();
+    	ArrayList<Transaction> blockTx = maxHeightBlock.getTransactions();
+    	for (Transaction tx : blockTx) {
+	        for (int i = 0; i < tx.numOutputs(); i++) {
+	            Transaction.Output out = tx.getOutput(i);
+	            UTXO utxo = new UTXO(tx.getHash(), i);
+	            maxHeightUTXOPool.addUTXO(utxo, out);
+	        }
+    	}
+    	return maxHeightUTXOPool;
     }
 
     /** Get the transaction pool to mine a new block */
