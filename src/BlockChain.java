@@ -18,14 +18,22 @@ public class BlockChain {
      */
     ArrayList<Block> blockChain;
     Block maxHeightBlock;
-    UTXOPool maxHeightUTXOPool;
-    TransactionPool transactionPool;
+    UTXOPool maxHeightUTXOPool; 
+    TransactionPool transactionPool; 
     
     public BlockChain(Block genesisBlock) {
-        // IMPLEMENT THIS
+        // Initialize quantities
     	this.blockChain = new ArrayList<Block>();
+    	this.maxHeightUTXOPool = new UTXOPool(); 
+    	this.transactionPool = new TransactionPool();
     	this.blockChain.add(genesisBlock);
     	this.maxHeightBlock = genesisBlock;
+    	
+    	for (Transaction tx : genesisBlock.getTransactions()) {
+    		this.transactionPool.addTransaction(tx);
+    	}
+    	this.transactionPool.addTransaction(genesisBlock.getCoinbase());
+    	this.maxHeightUTXOPool = getMaxHeightUTXOPool(); 
     	
     }
 
@@ -38,13 +46,12 @@ public class BlockChain {
     /** Get the UTXOPool for mining a new block on top of max height block */
     public UTXOPool getMaxHeightUTXOPool() {
         // IMPLEMENT THIS
-    	this.maxHeightUTXOPool = new UTXOPool();
     	ArrayList<Transaction> blockTx = maxHeightBlock.getTransactions();
     	for (Transaction tx : blockTx) {
 	        for (int i = 0; i < tx.numOutputs(); i++) {
 	            Transaction.Output out = tx.getOutput(i);
 	            UTXO utxo = new UTXO(tx.getHash(), i);
-	            maxHeightUTXOPool.addUTXO(utxo, out);
+	            this.maxHeightUTXOPool.addUTXO(utxo, out);
 	        }
     	}
     	//Add outputs for the previous block coinbase transaction
@@ -52,17 +59,17 @@ public class BlockChain {
     	for (int i = 0; i < coinbase.numOutputs(); i++) {
             Transaction.Output out = coinbase.getOutput(i);
             UTXO utxo = new UTXO(coinbase.getHash(), i);
-            maxHeightUTXOPool.addUTXO(utxo, out);
+            this.maxHeightUTXOPool.addUTXO(utxo, out);
         }
     	
     	
-    	return maxHeightUTXOPool;
+    	return this.maxHeightUTXOPool;
     }
 
     /** Get the transaction pool to mine a new block */
     public TransactionPool getTransactionPool() {
         // IMPLEMENT THIS
-    	return transactionPool;
+    	return this.transactionPool;
     }
 
     /**
@@ -91,7 +98,7 @@ public class BlockChain {
     
     public boolean addBlock(Block block) {
         // All transaction should be valid
-    	TxHandler txHandler = new TxHandler(maxHeightUTXOPool);
+    	TxHandler txHandler = new TxHandler(this.maxHeightUTXOPool);
     	ArrayList<Transaction> transactionList = block.getTransactions();
     	Transaction[] validTxs;
     	validTxs = txHandler.handleTxs(
@@ -114,12 +121,16 @@ public class BlockChain {
 	    		for (Transaction tx : transactionList) {
 	    			transactionPool.removeTransaction(tx.getHash());
 	    		}
+	    		//Add coinbase transaction to pool
+	    		transactionPool.addTransaction(block.getCoinbase());
 	    		return true;
 	    	}
 	    	else {
 	    		return false;
 	    	}
     	}
+    	
+
     	
     }
 
