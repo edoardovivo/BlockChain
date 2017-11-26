@@ -22,6 +22,10 @@ public class TxHandler {
         // IMPLEMENT THIS
     	txHandlerPool = new UTXOPool(utxoPool);
     }
+    
+    public UTXOPool getUTXOPool() {
+    	return this.txHandlerPool;
+    }
 
     /**
      * @return true if:
