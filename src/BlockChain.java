@@ -71,5 +71,8 @@ public class BlockChain {
     /** Add a transaction to the transaction pool */
     public void addTransaction(Transaction tx) {
         // IMPLEMENT THIS
+    	transactionPool.addTransaction(tx);
     }
 }
+
+
