@@ -15,6 +15,7 @@ public class BlockChain {
      */
     ArrayList<Block> blockChain;
     Block maxHeightBlock;
+    UTXOPool maxHeightUTXOPool;
     TransactionPool transactionPool;
     
     public BlockChain(Block genesisBlock) {
@@ -34,7 +35,7 @@ public class BlockChain {
     /** Get the UTXOPool for mining a new block on top of max height block */
     public UTXOPool getMaxHeightUTXOPool() {
         // IMPLEMENT THIS
-    	UTXOPool maxHeightUTXOPool = new UTXOPool();
+    	this.maxHeightUTXOPool = new UTXOPool();
     	ArrayList<Transaction> blockTx = maxHeightBlock.getTransactions();
     	for (Transaction tx : blockTx) {
 	        for (int i = 0; i < tx.numOutputs(); i++) {
@@ -64,8 +65,40 @@ public class BlockChain {
      * 
      * @return true if block is successfully added
      */
+    public int getBlockHeight(Block block) {
+    	byte[] prevBlockHash = block.getPrevBlockHash();
+    	int height = 1;
+    	for (Block bl : blockChain) {
+    		if (bl.getHash() == prevBlockHash) {
+    			break;
+    		}
+    		height += 1;
+    	}
+    	return height + 1;
+    }
+    
     public boolean addBlock(Block block) {
-        // IMPLEMENT THIS
+        // All transaction should be valid
+    	TxHandler txHandler = new TxHandler(maxHeightUTXOPool);
+    	ArrayList<Transaction> transactionList = block.getTransactions();
+    	for (Transaction tx : transactionList) {
+    		if (!txHandler.isValidTx(tx)) {
+    			return false;
+    		}
+    	}
+    	
+    	//Height of the new block.
+    	int blockHeight = getBlockHeight(block);
+    	int maxHeight = blockChain.size();
+    	if (blockHeight > (maxHeight - CUT_OFF_AGE)) {
+    		blockChain.add(block);
+    		return true;
+    	}
+    	else {
+    		return false;
+    	}
+    	
+    	
     }
 
     /** Add a transaction to the transaction pool */
