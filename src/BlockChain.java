@@ -18,7 +18,7 @@ public class BlockChain {
      */
     ArrayList<Block> blockChain;
     Block maxHeightBlock;
-    UTXOPool maxHeightUTXOPool;
+    UTXOPool maxHeightUTXOPool = null;
      
     TransactionPool transactionPool; 
     
@@ -34,8 +34,8 @@ public class BlockChain {
 
     /** Get the maximum height block */
     public Block getMaxHeightBlock() {
-        maxHeightBlock = blockChain.get(blockChain.size()-1);
-        return maxHeightBlock; 
+    	Block mx = blockChain.get(blockChain.size()-1);
+        return mx; 
     }
 
     /** Get the UTXOPool for mining a new block on top of max height block */
@@ -57,6 +57,7 @@ public class BlockChain {
             UTXO utxo = new UTXO(coinbase.getHash(), i);
             utxoPool.addUTXO(utxo, out);
         }
+
     	
     	
     	return utxoPool;
@@ -93,9 +94,19 @@ public class BlockChain {
     }
     
     public boolean addBlock(Block block) {
-        // All transaction should be valid
-    	if (block.getPrevBlockHash() == null) return false;
+        //Previous block hash should be valid
+    	byte[] prevBlockHash = block.getPrevBlockHash();
+    	boolean anyValidPrevHash = false;
+    	if (prevBlockHash == null) return false;
+    	for (Block bl : blockChain) {
+    		if (bl.getHash() == prevBlockHash) {
+    			anyValidPrevHash = true;
+    		}
+    	}
+    	if (!anyValidPrevHash) return false;
     	
+    	
+    	// All transaction should be valid
     	TxHandler txHandler = new TxHandler(this.maxHeightUTXOPool);
     	ArrayList<Transaction> transactionList = block.getTransactions();
     	Transaction[] validTxs;
@@ -121,6 +132,8 @@ public class BlockChain {
 	    		}
 	    		//Add coinbase transaction to pool
 	    		transactionPool.addTransaction(block.getCoinbase());
+	    		maxHeightBlock = getMaxHeightBlock();
+	    		maxHeightUTXOPool = getMaxHeightUTXOPool();
 	    		return true;
 	    	}
 	    	else {
