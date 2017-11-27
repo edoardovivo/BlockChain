@@ -18,23 +18,18 @@ public class BlockChain {
      */
     ArrayList<Block> blockChain;
     Block maxHeightBlock;
-    UTXOPool maxHeightUTXOPool; 
+    UTXOPool maxHeightUTXOPool;
+     
     TransactionPool transactionPool; 
     
     public BlockChain(Block genesisBlock) {
         // Initialize quantities
-    	this.blockChain = new ArrayList<Block>();
-    	this.maxHeightUTXOPool = new UTXOPool(); 
-    	this.transactionPool = new TransactionPool();
-    	this.blockChain.add(genesisBlock);
-    	this.maxHeightBlock = genesisBlock;
-    	
-    	for (Transaction tx : genesisBlock.getTransactions()) {
-    		this.transactionPool.addTransaction(tx);
-    	}
-    	this.transactionPool.addTransaction(genesisBlock.getCoinbase());
-    	this.maxHeightUTXOPool = getMaxHeightUTXOPool(); 
-    	
+    	blockChain = new ArrayList<Block>();
+    	maxHeightUTXOPool = new UTXOPool();  	
+    	blockChain.add(genesisBlock);
+    	transactionPool = new TransactionPool();
+    	maxHeightBlock = genesisBlock;
+    	maxHeightUTXOPool = getMaxHeightUTXOPool();
     }
 
     /** Get the maximum height block */
@@ -46,12 +41,13 @@ public class BlockChain {
     /** Get the UTXOPool for mining a new block on top of max height block */
     public UTXOPool getMaxHeightUTXOPool() {
         // IMPLEMENT THIS
+    	UTXOPool utxoPool = new UTXOPool();
     	ArrayList<Transaction> blockTx = maxHeightBlock.getTransactions();
     	for (Transaction tx : blockTx) {
 	        for (int i = 0; i < tx.numOutputs(); i++) {
 	            Transaction.Output out = tx.getOutput(i);
 	            UTXO utxo = new UTXO(tx.getHash(), i);
-	            this.maxHeightUTXOPool.addUTXO(utxo, out);
+	            utxoPool.addUTXO(utxo, out);
 	        }
     	}
     	//Add outputs for the previous block coinbase transaction
@@ -59,11 +55,11 @@ public class BlockChain {
     	for (int i = 0; i < coinbase.numOutputs(); i++) {
             Transaction.Output out = coinbase.getOutput(i);
             UTXO utxo = new UTXO(coinbase.getHash(), i);
-            this.maxHeightUTXOPool.addUTXO(utxo, out);
+            utxoPool.addUTXO(utxo, out);
         }
     	
     	
-    	return this.maxHeightUTXOPool;
+    	return utxoPool;
     }
 
     /** Get the transaction pool to mine a new block */
@@ -98,6 +94,8 @@ public class BlockChain {
     
     public boolean addBlock(Block block) {
         // All transaction should be valid
+    	if (block.getPrevBlockHash() == null) return false;
+    	
     	TxHandler txHandler = new TxHandler(this.maxHeightUTXOPool);
     	ArrayList<Transaction> transactionList = block.getTransactions();
     	Transaction[] validTxs;
